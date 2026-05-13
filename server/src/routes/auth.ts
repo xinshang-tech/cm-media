@@ -220,6 +220,13 @@ router.post('/logout', authenticate, async (req: Request, res: Response) => {
   }
 });
 
+router.post('/clear-session', async (req: Request, res: Response) => {
+  const cookieOpts = { domain: env.COOKIE_DOMAIN || undefined, secure: req.secure || req.get('x-forwarded-proto') === 'https', sameSite: 'lax' as const };
+  res.clearCookie('token', cookieOpts);
+  res.clearCookie('refresh_token', cookieOpts);
+  res.json({ success: true });
+});
+
 router.get('/me', authenticate, async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findUnique({

@@ -66,7 +66,7 @@ export default function CategoryPage() {
           fetchVideos(pagination.page + 1);
         }
       },
-      { threshold: 0.1 }
+      { rootMargin: '0px 0px 500px 0px', threshold: 0 }
     );
     observer.observe(observerRef.current);
     return () => observer.disconnect();
