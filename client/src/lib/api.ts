@@ -46,18 +46,13 @@ class ApiClient {
         if (refreshRes.ok) {
           return this.request<T>(endpoint, options, true);
         }
-        const isLoginPage = window.location.pathname === '/login';
-        if (!isLoginPage) {
-          window.location.href = '/login';
-        }
+        // refresh 也失败：清除服务端 session cookies 后硬跳转，防止循环
+        await this.clearSessionAndRedirect();
         throw new Error(fullMessage);
       }
 
       if (response.status === 401) {
-        const isLoginPage = window.location.pathname === '/login';
-        if (!isLoginPage) {
-          window.location.href = '/login';
-        }
+        await this.clearSessionAndRedirect();
         throw new Error(fullMessage);
       }
 
@@ -65,6 +60,16 @@ class ApiClient {
     }
 
     return response.json();
+  }
+
+  private async clearSessionAndRedirect(): Promise<void> {
+    if (window.location.pathname === '/login') return;
+    try {
+      await fetch(`${this.baseUrl}/auth/clear-session`, { method: 'POST', credentials: 'include' });
+    } catch {
+      // 忽略清除失败，继续跳转
+    }
+    window.location.replace('/login');
   }
 
   async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {

@@ -31,11 +31,7 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors({
   origin: (origin, callback) => {
-    const allowed = [
-      env.CLIENT_URL,
-      'http://localhost:3000',
-      'http://localhost:4900'
-    ];
+    const allowed = [env.CLIENT_URL, ...env.ALLOWED_ORIGINS];
     // 允许无 origin 的请求（如 Postman、curl）
     if (!origin || allowed.some(a => origin.startsWith(a))) {
       callback(null, true);
@@ -84,8 +80,9 @@ app.use('/api/admin', banChecker, adminRoutes);
 app.use('/api/aliyun', banChecker, aliyunRoutes);
 
 app.use((err: Error, _req: Request, res: Response, _next: unknown) => {
-  console.error('[App] 未捕获错误:', err);
-  res.status(500).json({ message: 'SERVER_ERROR' });
+  const msg = err?.message || String(err);
+  console.error('[App] 未捕获错误:', msg, err?.stack || '');
+  res.status(500).json({ message: 'SERVER_ERROR', error: msg });
 });
 
 async function start() {

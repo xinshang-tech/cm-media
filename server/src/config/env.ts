@@ -19,6 +19,7 @@ export const env = {
 
   SERVER_PORT: Number(process.env.SERVER_PORT || 4800),
   CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:4900',
+  ALLOWED_ORIGINS: (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:4900').split(',').filter(Boolean),
 
   MAX_LOGIN_ATTEMPTS: Number(process.env.MAX_LOGIN_ATTEMPTS || 10),
 

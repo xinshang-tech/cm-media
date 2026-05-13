@@ -19,11 +19,17 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const observerRef = useRef<HTMLDivElement>(null);
+  const paginationRef = useRef<Pagination | null>(null);
+  const loadingMoreRef = useRef(false);
 
   const fetchItems = useCallback(async (page: number = 1) => {
+    if (loadingMoreRef.current) return;
     try {
       if (page === 1) setLoading(true);
-      else setLoadingMore(true);
+      else {
+        setLoadingMore(true);
+        loadingMoreRef.current = true;
+      }
 
       const res = await api.get<{ videos: ContentItem[]; pagination: Pagination }>(
         `/videos?page=${page}`
@@ -34,12 +40,14 @@ export default function HomePage() {
       } else {
         setItems((prev) => [...prev, ...res.videos]);
       }
+      paginationRef.current = res.pagination;
       setPagination(res.pagination);
     } catch (err) {
       console.error('加载内容失败:', err);
     } finally {
       setLoading(false);
       setLoadingMore(false);
+      loadingMoreRef.current = false;
     }
   }, []);
 
@@ -47,23 +55,24 @@ export default function HomePage() {
     fetchItems(1);
   }, [fetchItems]);
 
-  // 无限滚动
+  // 无限滚动 - observer 只创建一次，通过 ref 读取最新状态避免闭包陷阱
   useEffect(() => {
     if (!observerRef.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && pagination && pagination.page < pagination.totalPages && !loadingMore) {
-          fetchItems(pagination.page + 1);
+        const p = paginationRef.current;
+        if (entries[0].isIntersecting && p && p.page < p.totalPages && !loadingMoreRef.current) {
+          fetchItems(p.page + 1);
         }
       },
-      { threshold: 0.1 }
+      { rootMargin: '0px 0px 300px 0px', threshold: 0 }
     );
 
     observer.observe(observerRef.current);
 
     return () => observer.disconnect();
-  }, [pagination, loadingMore, fetchItems]);
+  }, [fetchItems]);
 
   if (loading) {
     return (
@@ -87,7 +96,7 @@ export default function HomePage() {
       <div className="container-responsive">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {items.map((item, index) => (
-            <div key={`${item.type}-${item.uuid}`} className="animate-fade-in" style={{ animationDelay: `${index % 12 * 50}ms` }}>
+              <div key={`${item.type}-${item.uuid}`} className="animate-fade-in" style={{ animationDelay: `${Math.min(index, 30) * 40}ms` }}>
               <ContentCard item={item} />
             </div>
           ))}

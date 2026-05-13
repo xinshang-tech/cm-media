@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { api, getSignedUrl } from '@/lib/api';
 import Protection from '@/components/Protection';
@@ -33,26 +33,31 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  const routerRef = useRef(router);
+  routerRef.current = router;
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await api.get<{ user: User }>('/auth/me');
         const userData = res.user;
-        
+
         if (userData.avatarUrl) {
           userData.avatarUrl = await getSignedUrl(userData.avatarUrl);
         }
-        
+
         setUser(userData);
       } catch {
-        router.push('/login');
+        // api.ts 已处理 401：清除 cookies 并 window.location.replace('/login')
+        // 此处无需再跳转，只结束 loading 状态
         return;
       } finally {
         setLoading(false);
       }
     };
     fetchUser();
-  }, [router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (loading) {
     return (

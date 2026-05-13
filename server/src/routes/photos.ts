@@ -25,9 +25,20 @@ router.get('/search', authenticate, async (req: Request, res: Response) => {
       );
     }
 
+    const andArr: any[] = [{ OR: orConditions }];
+
+    if (req.user!.role !== 'ADMIN') {
+      andArr.push({
+        OR: [
+          { allowedUsers: null },
+          { allowedUsers: { contains: String(req.user!.id) } },
+        ],
+      });
+    }
+
     const where: any = {
       status: 'PUBLISHED',
-      OR: orConditions,
+      AND: andArr,
     };
 
     const [albums, total] = await Promise.all([

@@ -171,7 +171,8 @@ server {
 **`server/.env`** 额外注意：
 
 ```bash
-CLIENT_URL=https://your-domain.com     # CORS 白名单
+CLIENT_URL=https://your-domain.com     # CORS 白名单（自动纳入）
+ALLOWED_ORIGINS=https://your-domain.com  # CORS 额外白名单，逗号分隔（生产环境替换为实际域名）
 ```
 
 如果前后端**不在同一域名**，还需要设置 cookie 跨子域共享：
@@ -866,6 +867,7 @@ JWT_EXPIRES_IN=2h
 SERVER_PORT=4800
 CLIENT_PORT=4900
 CLIENT_URL=http://localhost:4900    # 生产改 https://your-domain.com
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:4900  # CORS 额外白名单，逗号分隔
 
 # 安全
 MAX_LOGIN_ATTEMPTS=10       # 超过后同时封禁 IP 和账号

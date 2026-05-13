@@ -94,15 +94,15 @@ export async function notifyLogin(params: {
           </p>
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">
             <tr style="border-bottom:1px solid #e2e8f0;">
-              <td style="padding:8px 12px;color:#64748b;font-size:12px;">登录时间</td>
+              <td style="padding:8px 12px;color:#64748b;font-size:12px;white-space:nowrap;">登录时间</td>
               <td style="padding:8px 12px;color:#0f172a;font-size:13px;">${params.time}</td>
             </tr>
             <tr style="border-bottom:1px solid #e2e8f0;">
-              <td style="padding:8px 12px;color:#64748b;font-size:12px;">IP 地址</td>
+              <td style="padding:8px 12px;color:#64748b;font-size:12px;white-space:nowrap;">IP 地址</td>
               <td style="padding:8px 12px;color:#0f172a;font-size:13px;font-family:monospace;">${params.ip}${params.address ? `&nbsp;<span style="color:#64748b;font-size:11px;">${params.address}</span>` : ''}</td>
             </tr>
             <tr>
-              <td style="padding:8px 12px;color:#64748b;font-size:12px;">浏览器</td>
+              <td style="padding:8px 12px;color:#64748b;font-size:12px;white-space:nowrap;">浏览器</td>
               <td style="padding:8px 12px;color:#0f172a;font-size:11px;word-break:break-all;">${params.userAgent}</td>
             </tr>
           </table>
@@ -150,19 +150,19 @@ export async function notifyBruteForce(params: {
         <tr><td style="background:#fff;padding:16px 18px;">
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;">
             <tr style="border-bottom:1px solid #fecaca;">
-              <td style="padding:8px 12px;color:#9f1239;font-size:12px;">攻击来源 IP</td>
+              <td style="padding:8px 12px;color:#9f1239;font-size:12px;white-space:nowrap;">攻击来源 IP</td>
               <td style="padding:8px 12px;color:#0f172a;font-size:13px;font-weight:700;font-family:monospace;">${params.ip}${params.address ? `&nbsp;<span style="color:#64748b;font-size:11px;font-weight:400;">${params.address}</span>` : ''}</td>
             </tr>
             <tr style="border-bottom:1px solid #fecaca;">
-              <td style="padding:8px 12px;color:#9f1239;font-size:12px;">目标账号</td>
+              <td style="padding:8px 12px;color:#9f1239;font-size:12px;white-space:nowrap;">目标账号</td>
               <td style="padding:8px 12px;color:#0f172a;font-size:13px;font-weight:600;">${params.username}</td>
             </tr>
             <tr style="border-bottom:1px solid #fecaca;">
-              <td style="padding:8px 12px;color:#9f1239;font-size:12px;">失败次数</td>
+              <td style="padding:8px 12px;color:#9f1239;font-size:12px;white-space:nowrap;">失败次数</td>
               <td style="padding:8px 12px;color:#ef4444;font-size:16px;font-weight:800;">${params.attempts} 次</td>
             </tr>
             <tr>
-              <td style="padding:8px 12px;color:#9f1239;font-size:12px;">触发时间</td>
+              <td style="padding:8px 12px;color:#9f1239;font-size:12px;white-space:nowrap;">触发时间</td>
               <td style="padding:8px 12px;color:#0f172a;font-size:13px;">${params.time}</td>
             </tr>
           </table>

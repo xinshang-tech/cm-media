@@ -43,44 +43,48 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
     const search = req.query.search as string;
     const skip = (page - 1) * pageSize;
 
-    const videoWhere: Prisma.VideoWhereInput = {
-      status: 'PUBLISHED',
-    };
-
-    const albumWhere: Prisma.PhotoAlbumWhereInput = {
-      status: 'PUBLISHED',
-    };
+    const videoAnd: Prisma.VideoWhereInput[] = [{ status: 'PUBLISHED' }];
+    const albumAnd: Prisma.PhotoAlbumWhereInput[] = [{ status: 'PUBLISHED' }];
 
     if (req.user!.role !== 'ADMIN') {
-      videoWhere.allowedUsers = null;
-      albumWhere.allowedUsers = null;
+      const allowedFilter = {
+        OR: [
+          { allowedUsers: null },
+          { allowedUsers: { contains: String(req.user!.id) } },
+        ],
+      };
+      videoAnd.push(allowedFilter);
+      albumAnd.push(allowedFilter);
     }
 
     if (categorySlug) {
-      videoWhere.categories = {
-        some: {
-          category: { slug: categorySlug },
-        },
-      };
-      albumWhere.categories = {
-        some: {
-          category: { slug: categorySlug },
-        },
-      };
+      videoAnd.push({
+        categories: { some: { category: { slug: categorySlug } } },
+      });
+      albumAnd.push({
+        categories: { some: { category: { slug: categorySlug } } },
+      });
     }
 
     if (search) {
-      videoWhere.OR = [
-        { title: { contains: search } },
-        { content: { contains: search } },
-      ];
-      albumWhere.OR = [
-        { title: { contains: search } },
-        { content: { contains: search } },
-      ];
+      videoAnd.push({
+        OR: [
+          { title: { contains: search } },
+          { content: { contains: search } },
+        ],
+      });
+      albumAnd.push({
+        OR: [
+          { title: { contains: search } },
+          { content: { contains: search } },
+        ],
+      });
     }
 
-    const cacheKey = `videos:v2:${page}:${pageSize}:${categorySlug || ''}:${search || ''}:${req.user!.role}`;
+    const videoWhere: Prisma.VideoWhereInput = { AND: videoAnd };
+    const albumWhere: Prisma.PhotoAlbumWhereInput = { AND: albumAnd };
+
+    const cacheKey = `videos:v3:${page}:${pageSize}:${categorySlug || ''}:${search || ''}:${req.user!.role !== 'ADMIN' ? req.user!.id : 'admin'}`;
     const cached = await cacheGet<{ items: unknown[]; total: number }>(cacheKey);
 
     if (cached) {
@@ -225,7 +229,17 @@ router.get('/search', authenticate, async (req: Request, res: Response) => {
 
     const where: Prisma.VideoWhereInput = {
       status: 'PUBLISHED',
-      OR: orConditions,
+      AND: [
+        { OR: orConditions },
+        ...(req.user!.role !== 'ADMIN'
+          ? [{
+              OR: [
+                { allowedUsers: null },
+                { allowedUsers: { contains: String(req.user!.id) } },
+              ],
+            } as Prisma.VideoWhereInput]
+          : []),
+      ],
     };
 
     const [videos, total] = await Promise.all([
@@ -546,7 +560,10 @@ router.get('/:uuid/related', authenticate, async (req: Request, res: Response) =
           status: 'PUBLISHED',
           id: { not: video.id },
           categories: { some: { categoryId: { in: categoryIds } } },
-        },
+          ...(req.user!.role !== 'ADMIN'
+            ? { AND: [{ OR: [{ allowedUsers: null }, { allowedUsers: { contains: String(req.user!.id) } }] }] }
+            : {}),
+        } as any,
         select: { ...videoSelect, categories: { select: { categoryId: true } } },
         take: 60,
       });
@@ -566,7 +583,13 @@ router.get('/:uuid/related', authenticate, async (req: Request, res: Response) =
     } else {
       // 无分类时退化为播放量排行
       related = await prisma.video.findMany({
-        where: { status: 'PUBLISHED', id: { not: video.id } },
+        where: {
+          status: 'PUBLISHED',
+          id: { not: video.id },
+          ...(req.user!.role !== 'ADMIN'
+            ? { AND: [{ OR: [{ allowedUsers: null }, { allowedUsers: { contains: String(req.user!.id) } }] }] }
+            : {}),
+        },
         select: videoSelect,
         orderBy: { viewCount: 'desc' },
         take: 20,
