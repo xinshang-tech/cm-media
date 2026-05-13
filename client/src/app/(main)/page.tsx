@@ -72,36 +72,36 @@ export default function HomePage() {
     observer.observe(observerRef.current);
 
     return () => observer.disconnect();
-  }, [fetchItems]);
-
-  if (loading) {
-    return (
-      <div className="container-responsive py-6">
-        <VideoGridSkeleton count={15} />
-      </div>
-    );
-  }
+  }, [fetchItems, loading]);
 
   return (
     <div className="pt-4 pb-8">
-      {pagination && (
-        <div className="container-responsive pb-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-base font-semibold text-white">最新内容</h1>
-            <span className="text-xs text-gray-500 font-mono">{pagination.total} 个内容</span>
-          </div>
+      {loading ? (
+        <div className="container-responsive py-6">
+          <VideoGridSkeleton count={15} />
         </div>
-      )}
-
-      <div className="container-responsive">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {items.map((item, index) => (
-              <div key={`${item.type}-${item.uuid}`} className="animate-fade-in" style={{ animationDelay: `${Math.min(index, 30) * 40}ms` }}>
-              <ContentCard item={item} />
+      ) : (
+        <>
+          {pagination && (
+            <div className="container-responsive pb-4">
+              <div className="flex items-center justify-between">
+                <h1 className="text-base font-semibold text-white">最新内容</h1>
+                <span className="text-xs text-gray-500 font-mono">{pagination.total} 个内容</span>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
+          )}
+
+          <div className="container-responsive">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {items.map((item, index) => (
+                <div key={`${item.type}-${item.uuid}`} className="animate-fade-in" style={{ animationDelay: `${Math.min(index, 30) * 40}ms` }}>
+                  <ContentCard item={item} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
 
       <div ref={observerRef} className="h-10" />
 
