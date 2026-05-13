@@ -80,8 +80,9 @@ app.use('/api/admin', banChecker, adminRoutes);
 app.use('/api/aliyun', banChecker, aliyunRoutes);
 
 app.use((err: Error, _req: Request, res: Response, _next: unknown) => {
-  console.error('[App] 未捕获错误:', err);
-  res.status(500).json({ message: 'SERVER_ERROR' });
+  const msg = err?.message || String(err);
+  console.error('[App] 未捕获错误:', msg, err?.stack || '');
+  res.status(500).json({ message: 'SERVER_ERROR', error: msg });
 });
 
 async function start() {

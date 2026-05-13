@@ -1919,22 +1919,26 @@ router.get('/watch-completion/videos', async (req: Request, res: Response) => {
 
     const records = await prisma.viewRecord.findMany({
       where: { videoId: { in: videoIds } },
-      select: { userId: true, videoId: true, lastViewedAt: true },
+      select: { userId: true, videoId: true, totalDuration: true, lastViewedAt: true },
     });
     const userByVideo = new Map<number, Set<number>>();
     const lastViewByVideo = new Map<number, Date>();
+    const maxDurationByVideo = new Map<number, number>();
     for (const r of records) {
       const vid = r.videoId!;
       if (!userByVideo.has(vid)) userByVideo.set(vid, new Set());
       userByVideo.get(vid)!.add(r.userId);
       const prev = lastViewByVideo.get(vid);
       if (!prev || r.lastViewedAt > prev) lastViewByVideo.set(vid, r.lastViewedAt);
+      const td = Number(r.totalDuration);
+      if (td > (maxDurationByVideo.get(vid) || 0)) maxDurationByVideo.set(vid, td);
     }
 
     const data = paged.map(g => {
       const vid = Number(g.video_id);
       const v = videoMap.get(vid);
-      const duration = v?.vodVideo?.videoDuration ? Number(v.vodVideo.videoDuration) : 0;
+      const vodDuration = v?.vodVideo?.videoDuration ? Number(v.vodVideo.videoDuration) : 0;
+      const duration = vodDuration || maxDurationByVideo.get(vid) || 0;
       const users = userByVideo.get(vid) || new Set<number>();
 
       let sumCompletion = 0;
@@ -1990,7 +1994,7 @@ router.get('/watch-completion/videos/:videoId/users', async (req: Request, res: 
     });
     if (!video) return res.status(404).json({ message: 'NOT_FOUND' });
 
-    const duration = video.vodVideo?.videoDuration ? Number(video.vodVideo.videoDuration) : 0;
+    const vodDuration = video.vodVideo?.videoDuration ? Number(video.vodVideo.videoDuration) : 0;
 
     const [records, allSegments] = await Promise.all([
       prisma.viewRecord.findMany({
@@ -2004,6 +2008,9 @@ router.get('/watch-completion/videos/:videoId/users', async (req: Request, res: 
         select: { userId: true, segStart: true, segEnd: true },
       }),
     ]);
+
+    const maxRecordDuration = records.reduce((max, r) => Math.max(max, Number(r.totalDuration)), 0);
+    const duration = vodDuration || maxRecordDuration;
 
     const segByUser = new Map<number, { start: number; end: number }[]>();
     for (const s of allSegments) {

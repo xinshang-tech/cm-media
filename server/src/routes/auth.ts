@@ -142,8 +142,9 @@ router.post('/login', async (req: Request, res: Response) => {
       user: result.user,
     });
   } catch (error) {
-    console.error('[Auth] 登录错误:', error);
-    res.status(500).json({ message: 'SERVER_ERROR' });
+    const msg = (error as Error).message || String(error);
+    console.error('[Auth] 登录错误:', msg, (error as Error).stack || '');
+    res.status(500).json({ message: 'SERVER_ERROR', error: msg });
   }
 });
 

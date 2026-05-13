@@ -87,7 +87,7 @@ export default function HomePage() {
       <div className="container-responsive">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {items.map((item, index) => (
-            <div key={`${item.type}-${item.uuid}`} className="animate-fade-in" style={{ animationDelay: `${index % 12 * 50}ms` }}>
+              <div key={`${item.type}-${item.uuid}`} className="animate-fade-in" style={{ animationDelay: `${Math.min(index, 30) * 40}ms` }}>
               <ContentCard item={item} />
             </div>
           ))}
