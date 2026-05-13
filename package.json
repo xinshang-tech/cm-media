@@ -1,0 +1,24 @@
+{
+  "name": "cm-media",
+  "version": "1.0.0",
+  "private": true,
+  "description": "内部视频平台 - Next.js + Express + MySQL",
+  "scripts": {
+    "dev": "concurrently --kill-others --kill-others-on-fail \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "start": "concurrently --kill-others --kill-others-on-fail \"npm run start:server\" \"npm run start:client\"",
+    "start:client": "cd client && npm start",
+    "start:server": "cd server && npm start",
+    "db:push": "cd server && npx prisma db push",
+    "db:generate": "cd server && npx prisma generate",
+    "db:seed": "cd server && npx prisma db seed",
+    "db:studio": "cd server && npx prisma studio"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

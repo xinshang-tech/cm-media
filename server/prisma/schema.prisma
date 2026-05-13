@@ -1,0 +1,357 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model BannedIp {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  ipAddress   String    @unique @db.VarChar(45) @map("ip_address")
+  isPermanent Boolean   @default(true) @map("is_permanent")
+  bannedAt    DateTime  @map("banned_at")
+  reason      String?   @db.VarChar(255)
+  unbannedAt  DateTime? @map("unbanned_at")
+  unbannedBy  Int?      @db.UnsignedInt @map("unbanned_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  user        User?     @relation(fields: [unbannedBy], references: [id])
+
+  @@index([ipAddress])
+  @@index([isPermanent])
+  @@index([unbannedBy], map: "banned_ips_unbanned_by_fkey")
+  @@map("banned_ips")
+}
+
+model Category {
+  id                    Int                    @id @default(autoincrement()) @db.UnsignedInt
+  name                  String                 @db.VarChar(100)
+  slug                  String                 @unique @db.VarChar(100)
+  parentId              Int?                   @db.UnsignedInt @map("parent_id")
+  sortOrder             Int                    @default(0) @map("sort_order")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+  parent                Category?              @relation("CategoryChildren", fields: [parentId], references: [id])
+  children              Category[]             @relation("CategoryChildren")
+  videoCategories       VideoCategory[]
+  photoAlbumCategories  PhotoAlbumCategory[]
+
+  @@index([parentId])
+  @@index([slug])
+  @@map("categories")
+}
+
+model LoginLog {
+  id            BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  username      String   @db.VarChar(60)
+  ipAddress     String   @db.VarChar(45) @map("ip_address")
+  address       String   @default("") @db.VarChar(255)
+  userAgent     String   @default("") @db.VarChar(512) @map("user_agent")
+  success       Boolean  @default(false)
+  failureReason String?  @db.VarChar(100) @map("failure_reason")
+  userId        Int?     @db.UnsignedInt @map("user_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  user          User?    @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([ipAddress])
+  @@index([userId], map: "login_logs_user_id_fkey")
+  @@index([username])
+  @@map("login_logs")
+}
+
+model OperationLog {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  userId     Int      @db.UnsignedInt @map("user_id")
+  action     String   @db.VarChar(50)
+  targetType String?  @db.VarChar(50) @map("target_type")
+  targetId   Int?     @db.UnsignedInt @map("target_id")
+  details    String?  @db.LongText
+  ipAddress  String   @default("") @db.VarChar(45) @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([action])
+  @@index([createdAt])
+  @@index([userId])
+  @@map("operation_logs")
+}
+
+model UploadLog {
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  userId    Int      @db.UnsignedInt @map("user_id")
+  type      String   @db.VarChar(20)
+  url       String   @db.VarChar(500)
+  thumbUrl  String?  @db.VarChar(500) @map("thumb_url")
+  filename  String   @db.VarChar(255)
+  filesize  Int      @default(0) @db.UnsignedInt
+  mimetype  String   @default("") @db.VarChar(100)
+  width     Int?     @db.UnsignedInt
+  height    Int?     @db.UnsignedInt
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([type])
+  @@index([userId])
+  @@map("upload_logs")
+}
+
+model User {
+  id                 Int            @id @default(autoincrement()) @db.UnsignedInt
+  uuid               String         @unique @db.VarChar(36)
+  username           String         @unique @db.VarChar(60)
+  passwordHash       String         @db.VarChar(255) @map("password_hash")
+  nickname           String         @default("") @db.VarChar(60)
+  role               UserRole       @default(USER)
+  avatarUrl          String?        @db.VarChar(500) @map("avatar_url")
+  phone              String?        @unique @db.VarChar(20)
+  email              String?        @unique @db.VarChar(255)
+  sessionId          String?        @db.VarChar(64) @map("session_id")
+  sessionCreatedAt   DateTime?      @map("session_created_at")
+  lastLoginAt        DateTime?      @map("last_login_at")
+  lastLoginIp        String?        @db.VarChar(45) @map("last_login_ip")
+  lastLoginUa        String?        @db.VarChar(512) @map("last_login_ua")
+  loginAttempts      Int            @default(0) @db.UnsignedInt @map("login_attempts")
+  isPermanentlyBanned Boolean       @default(false) @map("is_permanently_banned")
+  bannedReason       String?        @db.VarChar(255) @map("banned_reason")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  bannedIps          BannedIp[]
+  loginLogs          LoginLog[]
+  operationLogs      OperationLog[]
+  uploadLogs         UploadLog[]
+  viewRecords        ViewRecord[]
+  viewSegments       ViewSegment[]
+  vodVideos          VodVideo[]
+
+  @@index([isPermanentlyBanned])
+  @@index([role])
+  @@index([sessionId])
+  @@index([uuid])
+  @@map("users")
+}
+
+model VideoCategory {
+  videoId    Int      @db.UnsignedInt @map("video_id")
+  categoryId Int      @db.UnsignedInt @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  video      Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, categoryId])
+  @@index([categoryId], map: "video_categories_category_id_fkey")
+  @@map("video_categories")
+}
+
+model Video {
+  id                Int             @id @default(autoincrement()) @db.UnsignedInt
+  uuid              String          @unique @db.VarChar(36)
+  title             String          @db.VarChar(255)
+  content           String?         @db.Text
+  vodVideoId        Int?            @db.UnsignedInt @map("vod_video_id")
+  previewVodVideoId Int?            @db.UnsignedInt @map("preview_vod_video_id")
+  posterUrl         String?         @db.VarChar(500) @map("poster_url")
+  status            VideoStatus     @default(DRAFT)
+  isPickup          Boolean         @default(false) @map("is_pickup")
+  viewCount         Int             @default(0) @db.UnsignedInt @map("view_count")
+  allowedUsers      String?         @db.LongText @map("allowed_users")
+  publishedAt       DateTime?       @map("published_at")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  categories        VideoCategory[]
+  vodVideo          VodVideo?       @relation("VideoMain", fields: [vodVideoId], references: [id])
+  previewVodVideo   VodVideo?       @relation("VideoPreview", fields: [previewVodVideoId], references: [id])
+  viewRecords       ViewRecord[]
+  viewSegments      ViewSegment[]
+
+  @@index([isPickup])
+  @@index([publishedAt])
+  @@index([status])
+  @@index([uuid])
+  @@index([vodVideoId], map: "videos_vod_video_id_fkey")
+  @@index([previewVodVideoId], map: "videos_preview_vod_video_id_fkey")
+  @@map("videos")
+}
+
+model ViewRecord {
+  id            BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  userId        Int      @db.UnsignedInt @map("user_id")
+  videoId       Int?     @db.UnsignedInt @map("video_id")
+  videoUuid     String?  @db.VarChar(36) @map("video_uuid")
+  videoTitle    String?  @db.VarChar(255) @map("video_title")
+  lastPosition  Decimal  @default(0.00) @db.Decimal(10, 2) @map("last_position")
+  totalDuration Decimal  @default(0.00) @db.Decimal(10, 2) @map("total_duration")
+  viewCount     Int      @default(1) @db.UnsignedInt @map("view_count")
+  lastViewedAt  DateTime @default(now()) @map("last_viewed_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video         Video?   @relation(fields: [videoId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, videoId])
+  @@index([lastViewedAt])
+  @@index([userId])
+  @@index([videoId])
+  @@map("view_records")
+}
+
+model ViewSegment {
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  userId    Int      @db.UnsignedInt @map("user_id")
+  videoId   Int      @db.UnsignedInt @map("video_id")
+  segStart  Decimal  @db.Decimal(10, 2) @map("seg_start")
+  segEnd    Decimal  @db.Decimal(10, 2) @map("seg_end")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([videoId])
+  @@index([userId, videoId])
+  @@index([createdAt])
+  @@map("view_segments")
+}
+
+model VodVideo {
+  id            Int            @id @default(autoincrement()) @db.UnsignedInt
+  uuid          String         @unique @db.VarChar(36)
+  filename      String         @db.VarChar(255)
+  filesize      Int            @default(0) @db.UnsignedInt
+  mimetype      String         @default("") @db.VarChar(100)
+  vodVideoId    String?        @unique @db.VarChar(100) @map("vod_video_id")
+  videoUrl      String?        @db.VarChar(500) @map("video_url")
+  coverUrl      String?        @db.VarChar(500) @map("cover_url")
+  videoWidth    Int?           @db.UnsignedInt @map("video_width")
+  videoHeight   Int?           @db.UnsignedInt @map("video_height")
+  videoDuration String?        @db.VarChar(20) @map("video_duration")
+  videoFps      Decimal?       @db.Decimal(5, 2) @map("video_fps")
+  tags          String?        @db.LongText
+  videoType     VodVideoType   @default(MAIN) @map("video_type")
+  status        VodVideoStatus @default(PROCESSING)
+  uploaderId    Int            @db.UnsignedInt @map("uploader_id")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  videos        Video[]        @relation("VideoMain")
+  previewVideos Video[]        @relation("VideoPreview")
+  uploader      User           @relation(fields: [uploaderId], references: [id])
+  mediaAssets   MediaAsset[]
+
+  @@index([status])
+  @@index([uploaderId])
+  @@index([uuid])
+  @@index([vodVideoId])
+  @@index([videoType])
+  @@map("vod_videos")
+}
+
+model MediaAsset {
+  id               Int            @id @default(autoincrement()) @db.UnsignedInt
+  vodVideoId       Int            @db.UnsignedInt @map("vod_video_id")
+  type             MediaAssetType
+  url              String         @db.VarChar(500)
+  originalFilename String?        @db.VarChar(255) @map("original_filename")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  vodVideo         VodVideo       @relation(fields: [vodVideoId], references: [id], onDelete: Cascade)
+
+  @@unique([vodVideoId, type])
+  @@index([vodVideoId])
+  @@index([type])
+  @@map("media_assets")
+}
+
+enum UserRole {
+  ADMIN @map("admin")
+  USER  @map("user")
+
+  @@map("users_role")
+}
+
+enum VideoStatus {
+  DRAFT      @map("draft")
+  PUBLISHED  @map("published")
+  ARCHIVED   @map("archived")
+
+  @@map("videos_status")
+}
+
+enum VodVideoStatus {
+  PROCESSING @map("processing")
+  READY      @map("ready")
+  FAILED     @map("failed")
+
+  @@map("vod_videos_status")
+}
+
+enum VodVideoType {
+  MAIN    @map("main")
+  PREVIEW @map("preview")
+
+  @@map("vod_video_type")
+}
+
+enum MediaAssetType {
+  CAPTION    @map("caption")
+  SPRITE     @map("sprite")
+  SPRITE_VTT @map("sprite_vtt")
+  COVER      @map("cover")
+
+  @@map("media_asset_type")
+}
+
+// ========================================
+// 相册系统
+// ========================================
+
+model PhotoAlbum {
+  id            Int             @id @default(autoincrement()) @db.UnsignedInt
+  uuid          String          @unique @db.VarChar(36)
+  title         String          @db.VarChar(255)
+  content       String?         @db.Text
+  coverUrl      String?         @db.VarChar(500) @map("cover_url")
+  status        VideoStatus     @default(DRAFT)
+  isPickup      Boolean         @default(false) @map("is_pickup")
+  viewCount     Int             @default(0) @db.UnsignedInt @map("view_count")
+  allowedUsers  String?         @db.LongText @map("allowed_users")
+  publishedAt   DateTime?       @map("published_at")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  categories    PhotoAlbumCategory[]
+  photos        Photo[]
+
+  @@index([isPickup])
+  @@index([publishedAt])
+  @@index([status])
+  @@index([uuid])
+  @@map("photo_albums")
+}
+
+model Photo {
+  id            Int             @id @default(autoincrement()) @db.UnsignedInt
+  albumId       Int             @db.UnsignedInt @map("album_id")
+  url           String          @db.VarChar(500)
+  thumbnailUrl  String?         @db.VarChar(500) @map("thumbnail_url")
+  sortOrder     Int             @default(0) @map("sort_order")
+  width         Int?            @db.UnsignedInt
+  height        Int?            @db.UnsignedInt
+  filesize      Int?            @db.UnsignedInt
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  album         PhotoAlbum      @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  @@index([albumId])
+  @@map("photos")
+}
+
+model PhotoAlbumCategory {
+  albumId       Int             @db.UnsignedInt @map("album_id")
+  categoryId    Int             @db.UnsignedInt @map("category_id")
+  category      Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  album         PhotoAlbum      @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  @@id([albumId, categoryId])
+  @@index([categoryId], map: "photo_album_categories_category_id_fkey")
+  @@map("photo_album_categories")
+}
