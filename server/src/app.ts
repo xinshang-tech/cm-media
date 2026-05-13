@@ -31,11 +31,7 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors({
   origin: (origin, callback) => {
-    const allowed = [
-      env.CLIENT_URL,
-      'http://localhost:3000',
-      'http://localhost:4900'
-    ];
+    const allowed = [env.CLIENT_URL, ...env.ALLOWED_ORIGINS];
     // 允许无 origin 的请求（如 Postman、curl）
     if (!origin || allowed.some(a => origin.startsWith(a))) {
       callback(null, true);
