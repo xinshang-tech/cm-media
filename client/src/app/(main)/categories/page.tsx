@@ -21,7 +21,7 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     api.get<{ categories: Category[] }>('/categories/with-covers')
-      .then(res => setCategories(res.categories))
+      .then(res => setCategories(res.categories.filter(c => c.videoCount > 0)))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
