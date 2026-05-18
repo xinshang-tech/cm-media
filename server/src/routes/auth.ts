@@ -96,7 +96,7 @@ router.post('/login', async (req: Request, res: Response) => {
         const address = await Promise.race([getLocationByIP(ip).catch(() => ''), new Promise<string>(r => setTimeout(() => r(''), 3000))]);
         notifyBruteForce({
           ip,
-          username,
+          username: user.nickname || user.username,
           attempts: count,
           time: new Date().toLocaleString('zh-CN'),
           address,

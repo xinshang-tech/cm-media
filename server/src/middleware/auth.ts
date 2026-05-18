@@ -303,7 +303,7 @@ export async function handleLoginSuccess(user: { id: number; username: string; n
   // 异步发送登录通知（带地址）
   const { notifyLogin } = await import('../services/notification.js');
   notifyLogin({
-    username: user.username,
+    username: user.nickname || user.username,
     ip,
     userAgent: ua,
     time: new Date().toLocaleString('zh-CN'),

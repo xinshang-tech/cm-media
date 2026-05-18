@@ -848,6 +848,9 @@ https://xxx.cdn.com/sv/abc/video.mp4
 ### 后端 `server/.env`
 
 ```bash
+# 应用名称（邮件通知中显示）
+APP_NAME=CM Media
+
 # 数据库
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -919,12 +922,34 @@ COOKIE_DOMAIN=.example.com
 ### 前端 `client/.env.local`
 
 ```bash
+# 应用名称（页面标题、manifest 等显示）
+NEXT_PUBLIC_APP_NAME=CM Media
+
 # 本地开发（前后端独立端口）
 NEXT_PUBLIC_API_URL=http://localhost:4800/api
 
 # 生产部署（Nginx 反向代理，前后端同域）
 # NEXT_PUBLIC_API_URL=/api
 ```
+
+### 修改应用名称
+
+应用名称（`CM Media`）通过环境变量统一管理，修改后即可在所有显示位置生效：
+
+| 位置 | 环境变量 | 影响范围 |
+|------|----------|----------|
+| 邮件通知标题/内容 | `APP_NAME`（server/.env） | 登录通知、验证码邮件 |
+| 浏览器标签页标题 | `NEXT_PUBLIC_APP_NAME`（client/.env.local） | 页面 title、meta 标签 |
+| PWA 应用名称 | `NEXT_PUBLIC_APP_NAME` | manifest.json（构建时自动生成） |
+| 图片 alt 属性 | `NEXT_PUBLIC_APP_NAME` | Logo 图片的无障碍文本 |
+
+**修改步骤：**
+
+1. 后端：编辑 `server/.env`，修改 `APP_NAME=你的应用名`
+2. 前端：编辑 `client/.env.local`，修改 `NEXT_PUBLIC_APP_NAME=你的应用名`
+3. 重新构建前端：`npm run build:client`（manifest.json 会在构建时自动重新生成）
+
+> 前端环境变量在 `next build` 时烘焙进客户端 JS，修改后必须重新构建。
 
 ---
 
