@@ -33,7 +33,11 @@ export default function NotFound() {
         </p>
         <a
           href="/"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 transition"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg transition hover:opacity-90"
+          style={{
+            backgroundColor: 'var(--color-foreground)',
+            color: 'var(--color-background)',
+          }}
         >
           <Home className="w-4 h-4" />
           返回首页
