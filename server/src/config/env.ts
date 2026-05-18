@@ -5,6 +5,7 @@ import { config } from 'dotenv';
 config({ path: resolve(process.cwd(), '.env') });
 
 export const env = {
+  APP_NAME: process.env.APP_NAME || 'CM Media',
   DB_HOST: process.env.DB_HOST || '127.0.0.1',
   DB_PORT: Number(process.env.DB_PORT || 3306),
   DB_NAME: process.env.DB_NAME || 'cm-media_2026',

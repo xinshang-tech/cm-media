@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { api, getErrorMessage } from '@/lib/api';
 
+const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || 'CM Media';
+
 export const dynamic = 'force-dynamic';
 
 export default function LoginPage() {
@@ -215,7 +217,7 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-sm mx-6 sm:mx-4">
         <div className="text-center mb-6">
-          <img src="/images/logo-icon.svg" alt="CM Media" className="w-12 h-12 sm:w-16 sm:h-16 mx-auto drop-shadow-lg" />
+          <img src="/images/logo-icon.svg" alt={APP_NAME} className="w-12 h-12 sm:w-16 sm:h-16 mx-auto drop-shadow-lg" />
         </div>
 
         <div

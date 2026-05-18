@@ -7,6 +7,8 @@ import { useTheme } from 'next-themes';
 import { api, getSignedUrl } from '@/lib/api';
 import Protection from '@/components/Protection';
 
+const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || 'CM Media';
+
 interface User {
   id: number;
   username: string;
@@ -110,7 +112,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <header className="sticky top-0 z-50 glass border-b border-border">
         <div className="flex items-center justify-between h-12 container-responsive">
           <Link href="/" className="flex items-center justify-left w-12 h-12 md:w-auto md:h-auto">
-            <img src="/images/logo-icon.svg" alt="CM Media" className="w-6 h-6" />
+            <img src="/images/logo-icon.svg" alt={APP_NAME} className="w-6 h-6" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">

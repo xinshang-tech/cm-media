@@ -77,7 +77,7 @@ export async function notifyLogin(params: {
 }): Promise<void> {
   if (!env.NOTIFY_ON_LOGIN) return;
 
-  const subject = `【登录通知】CM Media - ${params.username}`;
+  const subject = `【登录通知】${env.APP_NAME} - ${params.username}`;
   const html = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
@@ -90,7 +90,7 @@ export async function notifyLogin(params: {
         </td></tr>
         <tr><td style="background:#fff;padding:16px 18px;">
           <p style="margin:0 0 12px;color:#374151;font-size:13px;line-height:1.6;">
-            检测到以下账号刚刚登录了 <strong style="color:#1d4ed8;">CM Media</strong>，请确认是否为本人操作。
+            检测到以下账号刚刚登录了 <strong style="color:#1d4ed8;">${env.APP_NAME}</strong>，请确认是否为本人操作。
           </p>
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">
             <tr style="border-bottom:1px solid #e2e8f0;">
@@ -115,7 +115,7 @@ export async function notifyLogin(params: {
           </table>
         </td></tr>
         <tr><td style="background:#f8fafc;border-top:1px solid #e2e8f0;border-radius:0 0 8px 8px;padding:10px 18px;text-align:center;">
-          <p style="margin:0;color:#94a3b8;font-size:11px;">CM Media 系统自动发送，请勿回复</p>
+          <p style="margin:0;color:#94a3b8;font-size:11px;">${env.APP_NAME} 系统自动发送，请勿回复</p>
         </td></tr>
       </table>
     </td></tr>
@@ -175,7 +175,7 @@ export async function notifyBruteForce(params: {
           </table>
         </td></tr>
         <tr><td style="background:#f8fafc;border-top:1px solid #e2e8f0;border-radius:0 0 8px 8px;padding:10px 18px;text-align:center;">
-          <p style="margin:0;color:#94a3b8;font-size:11px;">CM Media 系统自动发送，请勿回复</p>
+          <p style="margin:0;color:#94a3b8;font-size:11px;">${env.APP_NAME} 系统自动发送，请勿回复</p>
         </td></tr>
       </table>
     </td></tr>
@@ -231,7 +231,7 @@ export async function sendSmsVerifyCode(phone: string, code: string): Promise<bo
 }
 
 export async function sendEmailVerifyCode(to: string, code: string): Promise<boolean> {
-  const subject = '【CM Media】邮箱验证码';
+  const subject = `【${env.APP_NAME}】邮箱验证码`;
   const html = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
@@ -241,7 +241,7 @@ export async function sendEmailVerifyCode(to: string, code: string): Promise<boo
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,0.08);border-radius:12px;overflow:hidden;">
         <!-- Header -->
         <tr><td style="background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%);padding:20px 28px;">
-          <div style="color:#fff;font-size:16px;font-weight:700;letter-spacing:0.3px;">CM Media</div>
+          <div style="color:#fff;font-size:16px;font-weight:700;letter-spacing:0.3px;">${env.APP_NAME}</div>
           <div style="color:#bfdbfe;font-size:12px;margin-top:2px;">安全验证</div>
         </td></tr>
         <!-- Body -->

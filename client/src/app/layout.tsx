@@ -2,10 +2,12 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
+const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || 'CM Media';
+
 export const metadata: Metadata = {
   title: {
-    default: 'CM Media',
-    template: '%s | CM Media',
+    default: APP_NAME,
+    template: `%s | ${APP_NAME}`,
   },
   description: '内部视频平台',
   robots: {
@@ -32,7 +34,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'CM Media',
+    title: APP_NAME,
   },
   formatDetection: {
     telephone: false,
@@ -63,8 +65,8 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="CM Media" />
-        <meta name="application-name" content="CM Media" />
+        <meta name="apple-mobile-web-app-title" content={APP_NAME} />
+        <meta name="application-name" content={APP_NAME} />
         <meta name="msapplication-TileColor" content="#000000" />
         <meta name="msapplication-tap-highlight" content="no" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
