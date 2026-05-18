@@ -6,7 +6,7 @@ import rateLimit from 'express-rate-limit';
 import { RedisStore } from 'rate-limit-redis';
 import { execSync } from 'child_process';
 import { env } from './config/env.js';
-import { prisma } from './config/database.js';
+import { prisma, stopDbKeepAlive } from './config/database.js';
 import { redis } from './config/redis.js';
 import authRoutes from './routes/auth.js';
 import videoRoutes from './routes/videos.js';
@@ -143,6 +143,7 @@ async function start() {
 // 优雅关闭
 process.on('SIGINT', async () => {
   console.log('[服务器] 正在关闭...');
+  stopDbKeepAlive();
   await prisma.$disconnect();
   redis.disconnect();
   process.exit(0);
@@ -150,6 +151,7 @@ process.on('SIGINT', async () => {
 
 process.on('SIGTERM', async () => {
   console.log('[服务器] 正在关闭...');
+  stopDbKeepAlive();
   await prisma.$disconnect();
   redis.disconnect();
   process.exit(0);
